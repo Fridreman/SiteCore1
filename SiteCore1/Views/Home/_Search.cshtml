@@ -1,0 +1,33 @@
+@model IEnumerable<SiteCore1.Models.Item>
+
+<table class="table">
+    <thead>
+        <tr>
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
+                </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                <a href="@Html.DisplayFor(modelItem => item.Url)">@Html.DisplayFor(modelItem => item.Name)</a>
+            </td>
+            <td>
+                <a href="@Html.DisplayFor(modelItem => item.Url)">
+                    <img src="@Html.DisplayFor(modelItem => item.Img)"
+                         width="100" height="100" alt="No image">
+                </a>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

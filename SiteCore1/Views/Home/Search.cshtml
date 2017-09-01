@@ -1,0 +1,79 @@
+﻿@{
+    ViewData["Title"] = "List users";
+}
+<h2>@ViewData["Message"]</h2>
+
+    <input name="searchTxt" type="text" maxlength="512" id="searchTxt" class="searchField" />
+    <button id="navLink" class="btn btn-default">Find</button>
+
+<div id="scrolList">
+    @Html.Partial("_Search")
+</div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script language="javascript" type="text/javascript">
+    var href = document.getElementById("searchTxt").value.replace(/\s/ig, '+');
+    $("#navLink").click(function (e) {
+        e.preventDefault();
+        href = document.getElementById("searchTxt").value.replace(/\s/ig, '+');
+        var url = "/Home/GetAllItem";
+        var page = "";
+        $.ajax({
+            url: url,
+            async: true,
+            type: "POST",
+            data: { "Page": page, "Href": href},
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("Not Found");
+                console.log("FAIL: " + errorThrown);
+            },
+            success: function (data, textStatus, jqXHR) {
+                console.log("SUCCES");
+                if (data != '') {
+                    $("#scrolList").append(data);
+                }
+                else {
+                    var z = document.getElementById("scrolList");
+                    z.innerHTML = "Ничего не найдено :(";
+                }
+            }
+        });
+    });
+
+    $(function (e) {
+        var page = 0;
+        var _inCallback = false;
+        var url = "/Home/GetAllItem";
+        function loadItems() {
+            if (page > -1 && !_inCallback) {
+                _inCallback = true;
+                page++;
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: { "Page": page, "Href": href },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        alert("Not Found");
+                        console.log("FAIL: " + errorThrown);
+                    },
+                    success: function (data, textStatus) {
+                        if (data != '') {
+                            $("#scrolList").append(data);
+                        }
+                        else {
+                            page = -1;
+                        }
+                        _inCallback = false;
+                    }
+                });
+            }
+        }
+        // обработка события скроллинга
+        $(window).scroll(function () {
+            if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+                loadItems();
+            }
+        });
+    });
+    
+</script>
