@@ -1,23 +1,24 @@
-﻿@model ExternalLoginConfirmationViewModel
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@model ExternalLoginConfirmationViewModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = @Localizer["Register"];
 }
 
 <h2>@ViewData["Title"].</h2>
-<h3>Associate your @ViewData["LoginProvider"] account.</h3>
+<h3>@Localizer["Associate"] @ViewData["LoginProvider"] @Localizer["account"] </h3>
 
 <form asp-controller="Account" asp-action="ExternalLoginConfirmation" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
-    <h4>Association Form</h4>
+    <h4>@Localizer["AssociateForm"]</h4>
     <hr />
     <div asp-validation-summary="All" class="text-danger"></div>
 
     <p class="text-info">
-        You've successfully authenticated with <strong>@ViewData["LoginProvider"]</strong>.
-        Please enter an email address for this site below and click the Register button to finish
-        logging in.
+        @Localizer["Ok1"] <strong>@ViewData["LoginProvider"]</strong>.
+        @Localizer["Ok2"]
     </p>
     <div class="form-group">
-        <label asp-for="Email" class="col-md-2 control-label"></label>
+        <label class="col-md-2 control-label">@Localizer["Email"]</label>
         <div class="col-md-10">
             <input asp-for="Email" class="form-control" />
             <span asp-validation-for="Email" class="text-danger"></span>
@@ -25,7 +26,7 @@
     </div>
     <div class="form-group">
         <div class="col-md-offset-2 col-md-10">
-            <button type="submit" class="btn btn-default">Register</button>
+            <button type="submit" class="btn btn-default">@Localizer["Register"]</button>
         </div>
     </div>
 </form>

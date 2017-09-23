@@ -8,13 +8,13 @@ using SiteCore1.Models;
 
 namespace SiteCore1.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class DbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext()
+        public DbContext()
         {
         }
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        public DbContext(DbContextOptions<DbContext> options)
             : base(options)
         {
         }

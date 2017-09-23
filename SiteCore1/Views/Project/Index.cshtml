@@ -1,0 +1,174 @@
+﻿@model SiteCore1.Models.Project
+<br />
+<h2 align="center">@ViewData["Title"]</h2>
+
+@{var Content = ViewData["Content"]; }
+
+<div style="width: 100%; word-wrap:break-word;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <p align="center" style="float:none;max-width: 100%; height: auto;">
+                    <img src="@ViewData["Image"]" alt="Обложка проекта" style="float:none;max-width: 100%; height: auto;">
+                </p>
+            </div>
+            <div class="col-md-4">
+                <div>
+                    @{
+                        switch (@Html.Raw(ViewData["StatusProject"]).ToString())
+                        {
+                            case "WorkAndFull":
+                                <div class="alert alert-success">Уже собрали и ещё собираем!</div> 
+                                break;
+                            case "WorkAndNotFull":
+                                <div class="alert alert-warning">Ведется сбор средств.</div> 
+                                break;
+                            case "NotWorkAndFull":
+                                <div class="alert alert-success">Проект состоялся!</div>
+                                break;
+                            case "NotWorkAndNotFull":
+                                <div class="alert alert-danger">Проект не состоялся!</div>
+                                break;
+                        }
+                    }
+                    <h3>Собрано средств: @Html.Raw(ViewData["Money"])</h3>
+                    <h5>Необходимо средстве: @Html.Raw(ViewData["Price"])</h5>
+                    <br />
+                    <h4>Дата окончания: @Html.Raw(ViewData["DataEnd"])</h4>
+                    @{
+                        switch (@Html.Raw(ViewData["StatusProject"]).ToString())
+                        {
+                            case "WorkAndFull":
+                                <input type="button" onclick="GetMoney();" value="Профинансировать проект" class="btn btn-default" />
+                                break;
+                            case "WorkAndNotFull":
+                                <input type="button" onclick="GetMoney();" value="Профинансировать проект" class="btn btn-default" />
+                                break;
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+
+    <p align="center">
+        @Html.Raw(Content)
+    </p>
+</div>
+
+
+<br /><br />
+
+<table id="dataTable" style="width: 100%;"></table>
+<br />
+<br />
+
+<div id="ProgressBar">0%</div>
+
+
+<SCRIPT language="javascript">
+    var Lots = "@Html.Raw(ViewData["Lots"])";
+    var count = 2.22;
+    var sizeWall = 1.11;
+    var table = document.getElementById("dataTable");
+    var row = table.insertRow(0);
+    var Money = Number("@Html.Raw(ViewData["Money"])");
+    var Price = Number("@Html.Raw(ViewData["Price"])");
+    $(document).ready(function () {
+        Table();
+    });
+    move();
+
+    function Table() {
+        var i = 0;
+        count = Lots.match(/;/g).length;
+        while (count != 0)
+        {
+            sizeWall = (Number(Lots.substring(Lots.search("_") + 1, Lots.search(";"))) / Price) * document.documentElement.clientWidth;
+            addRow(i);
+            count--;
+            i++;
+        }
+    };
+
+    function GetMoney() {
+        var donateMoney = prompt("Поддержать проект(BYN): ", "");
+        if (donateMoney == 0 || !isFinite(donateMoney)) {
+            alert("Необходимо целое число.");
+        }
+        else {
+            $.ajax({
+                url: "/Project/GetMoney",
+                type: "POST",
+                data: { "Name": "", "Value": donateMoney },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("Not Found");
+                    console.log("FAIL: " + errorThrown);
+                },
+                success: function (data, textStatus, jqXHR) {
+                    console.log("SUCCES");
+                    if (data != '') {
+                        location.reload(true);
+                    }
+                    else {
+                        var z = document.getElementById("scrolList");
+                        z.innerHTML = "Error :(";
+                    }
+                }
+            });
+        }
+    }
+
+    function addRow(i) {
+        var cell1 = row.insertCell(i);
+
+        var element1 = document.createElement("label");
+        element1.className = "rotatable";
+
+        cell1.width = sizeWall;
+
+        var delSymbol = Lots.search("_");
+        element1.innerHTML = Lots.substring(0, Lots.search("_"));
+        cell1.appendChild(element1);
+        Lots = Lots.substring(Lots.search(";") + 1, Lots.length);
+    };
+
+    function move() {
+        var elem = document.getElementById("ProgressBar");
+        var width = (Money / Price) * 100;
+        var id = setInterval(frame, Money % Price);
+        function frame() {
+            if (width == 0)
+                width++;
+            if ((Money / Price) * 100 >= 100)
+                elem.style.width = "100%";
+            else
+                elem.style.width = ((Money / Price) * 100).toString() + '%';
+            elem.innerHTML = Money;
+        }
+    }
+</SCRIPT>
+
+
+
+<style>
+
+    #ProgressBar {
+        width: 10%;
+        height: 30px;
+        background-color: #4CAF50;
+        text-align: center;
+        line-height: 30px;
+        color: white;
+        word-wrap: normal;
+    }
+
+    .rotatable {
+        -webkit-transform: rotate(-45deg);
+        -moz-transform: rotate(-45deg);
+        -o-transform: rotate(-45deg);
+        -ms-transform: rotate(-45deg);
+        transform: rotate(-45deg);
+    }
+</style>

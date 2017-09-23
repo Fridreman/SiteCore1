@@ -1,0 +1,81 @@
+﻿@model SiteCore1.Models.ProjectSetup
+@{
+    ViewData["Title"] = "Create Project";
+}
+<h2>@ViewData["Title"].</h2>
+
+<div class="form-group">
+    <label class="control-label">Обложка проекта</label>
+    <div id="dropzone">
+        <form action="/Project/UploadImageAsync" class="dropzone needsclick dz-clickable" id="uploader">
+            <div class="dz-message needsclick">
+                Перетащите сюда обложку проекта либо кликните для загрузки.<br>
+            </div>
+        </form>
+    </div>
+</div>
+
+<form asp-action="CreateAsync" asp-controller="Project">
+    <div>
+        <div class="validation" asp-validation-summary="ModelOnly"></div>
+        <div class="form-group">
+            <label class="control-label">Название проекта</label>
+            <input type="text" asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">Дата окончания проекта</label>
+            <input type="date" asp-for="Date" class="form-control" />
+            <span asp-validation-for="Date"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">Сумма сбора(сколько средств необходимо для полной реализации проекта)</label>
+            <input type="text" asp-for="Price" class="form-control" />
+            <span asp-validation-for="Price"></span>
+        </div>
+    </div>
+    <input id="button" type="submit" value="Создать проект" class="btn btn-default" />
+</form>
+
+<script>
+    Dropzone.autoDiscover = false;
+    var myDropzone = new Dropzone('#uploader', {
+        url: '/Project/UploadImageAsync',
+        maxFilesize: 5,
+        maxFiles: 1,
+        uploadMultiple: false,
+        parallelUploads: 1,
+        acceptedFiles: "image/*",
+        autoProcessQueue: false,
+        init: function () {
+            var startUpload = document.getElementById("button");
+            myDropzone = this;
+            startUpload.addEventListener("click", function () {
+                myDropzone.processQueue();
+            });
+            this.on("success", function () {
+                myDropzone.options.autoProcessQueue = true;
+            });
+        }
+    });
+</script>
+
+@section scripts{
+
+    <environment names="Development">
+        <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"
+                asp-fallback-src="~/lib/jquery-validation/dist/jquery.validate.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.validator">
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery.validation.unobtrusive/3.2.6/jquery.validate.unobtrusive.min.js"
+                asp-fallback-src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.validator && window.jQuery.validator.unobtrusive">
+        </script>
+    </environment>
+}

@@ -16,11 +16,10 @@
     $("#navLink").click(function (e) {
         e.preventDefault();
         href = document.getElementById("searchTxt").value.replace(/\s/ig, '+');
-        var url = "/Home/GetAllItem";
+        var url = "/Skroll/GetAllItem";
         var page = "";
         $.ajax({
             url: url,
-            async: true,
             type: "POST",
             data: { "Page": page, "Href": href},
             error: function (jqXHR, textStatus, errorThrown) {
@@ -43,7 +42,7 @@
     $(function (e) {
         var page = 0;
         var _inCallback = false;
-        var url = "/Home/GetAllItem";
+        var url = "/Skroll/GetAllItem";
         function loadItems() {
             if (page > -1 && !_inCallback) {
                 _inCallback = true;

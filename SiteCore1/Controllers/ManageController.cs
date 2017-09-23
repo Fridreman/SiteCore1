@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using SiteCore1.Models;
 using SiteCore1.Models.ManageViewModels;
 using SiteCore1.Services;
+using SiteCore1.Data;
 
 namespace SiteCore1.Controllers
 {
@@ -22,7 +23,7 @@ namespace SiteCore1.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
-
+        
         public ManageController(
           UserManager<ApplicationUser> userManager,
           SignInManager<ApplicationUser> signInManager,
@@ -44,6 +45,7 @@ namespace SiteCore1.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(ManageMessageId? message = null)
         {
+            ApplicationUser applicationUser = await _userManager.FindByNameAsync(User.Identity.Name);
             ViewData["StatusMessage"] =
                 message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
                 : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
@@ -52,6 +54,7 @@ namespace SiteCore1.Controllers
                 : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
                 : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
                 : "";
+            ViewData["CountProject"] = applicationUser.CountProject;
 
             var user = await GetCurrentUserAsync();
             if (user == null)

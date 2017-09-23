@@ -1,10 +1,12 @@
-﻿@{
-    ViewData["Title"] = "Confirm Email";
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = @Localizer["Confirm"];
 }
 
-<h2>@ViewData["Title"].</h2>
+<h2>@Localizer["Confirm"]</h2>
 <div>
     <p>
-        Thank you for confirming your email. Please <a asp-controller="Account" asp-action="Login">Click here to Log in</a>.
+        @Localizer["Thank"] <a asp-controller="Account" asp-action="Login">@Localizer["Click"]</a>.
     </p>
 </div>

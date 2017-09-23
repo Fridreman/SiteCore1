@@ -1,0 +1,121 @@
+﻿@{
+    ViewData["Title"] = "Create Project";
+}
+<h2>@ViewData["Title"].</h2>
+
+<INPUT type="button" value="Добавить цель" onclick="addRow('dataTable')" class="btn btn-default" />
+              &nbsp;  
+<INPUT type="button" value="Удалить цель" onclick="deleteRow('dataTable')" class="btn btn-default" />
+<br />
+<br />
+
+<form name="Field">
+    <table id="dataTable">
+    </table>
+</form>
+<br />
+<button id="Send" class="btn btn-default">Create</button>
+
+<SCRIPT language="javascript">
+    var count = 0;
+    $("#Send").click(function (e) {
+        e.preventDefault();
+        if (count != 0) {
+            var arr = [];
+            var tempCount = 0;
+            var point = 1, Amount = 0;
+            $('.textbox').each(function () {
+                var nam = document.getElementById("textbox" + tempCount.toString()).value;
+                if (nam.length > 20 || nam.length < 3)
+                {
+                    alert("Цель должна быть от 3 до 20 символов..");
+                    point = 0;
+                    return;
+                }
+                var val = 0;
+                val = document.getElementById("pricebox" + tempCount.toString()).value;
+                if (val == 0 || !isFinite(val))
+                {
+                    alert("В графе 'средства' должно быть целое число.");
+                    point = 0;
+                    return;
+                }
+                tempCount++;
+                Amount = Amount + Number(val);
+                arr.push({ Text: nam, Price: Math.floor(val) });
+            });
+            if (Amount != @Html.Raw(ViewData["Price"])) {
+                point = 0;
+                alert("Cумма средств целей должна быть равна конечному сбору проекта..");
+            }
+            if (point == 1) {
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "/Project/SendLots",
+                    data: JSON.stringify(arr),
+                    dataType: "json",
+                    success: function (response, data) {
+                        alert(response.someValue);
+                    },
+                    error: function (err) {
+                    }
+                });
+            } else { arr = [];}
+        }
+        else { alert("Минимум одна цель.."); }
+    });
+
+    function addRow(tableID) {
+        var table = document.getElementById(tableID);
+
+        var rowCount = table.rows.length;
+        var row = table.insertRow(rowCount);
+
+        var cell1 = row.insertCell(0);
+        var element1 = document.createElement("input");
+        element1.type = "checkbox";
+        element1.name = "chkbox[]";
+        cell1.appendChild(element1);
+
+        var cell3 = row.insertCell(1);
+        var element3 = document.createElement("input");
+        element3.type = "text";
+        element3.name = "pricebox";
+        element3.className = "pricebox";
+        element3.id = "pricebox" + count.toString();
+        element3.placeholder = "Средства"
+        cell3.appendChild(element3);
+
+        var cell2 = row.insertCell(1);
+        var element2 = document.createElement("input");
+        element2.type = "text";
+        element2.name = "textbox";
+        element2.className = "textbox";
+        element2.id = "textbox" + count.toString();
+        element2.placeholder = "Цель"
+        cell2.appendChild(element2);
+
+        count++;
+    }
+
+    function deleteRow(tableID) {
+        try {
+            var table = document.getElementById(tableID);
+            var rowCount = table.rows.length;
+
+            for (var i = 0; i < rowCount; i++) {
+                var row = table.rows[i];
+                var chkbox = row.cells[0].childNodes[0];
+                if (null != chkbox && true == chkbox.checked) {
+                    table.deleteRow(i);
+                    rowCount--;
+                    i--;
+                }
+            }
+        } catch (e) {
+            alert(e);
+        }
+    }
+
+</SCRIPT>
