@@ -1,0 +1,49 @@
+@model SiteCore1.Models.ApplicationUser
+
+<div class="modal-content">
+    <div class="modal-header">
+        <button class="close" data-dismiss="modal" area-hidden="true">X</button>
+    </div>
+    <div class="modal-body">
+        <dl class="dl-horizontal">
+            <dd><img src="@ViewData["Image"]" alt="Scan pasport" style="float:none; max-width: 100%; height: auto;"></dd>
+            <dd>@Html.DisplayFor(model => model.UserName)</dd>
+        </dl>
+        <button id="accept" type="button" class="btn btn-default">Accept</button>
+        <button id="cancel" type="button" class="btn btn-default">Cancel</button>
+    </div>
+
+</div>
+
+<script>
+
+    $("#accept").click(function (e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: "/Manage/VerifiedTrue",
+            data: { "Page": "name", "Href": "@Model.UserName" },
+            success: function (response, data) {
+                location.reload();
+            },
+            error: function (err) {
+                location.reload();
+            }
+        });
+    });
+
+    $("#cancel").click(function (e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: "/Manage/VerifiedFalse",
+            data: { "Page" : "name", "Href" : "@Model.UserName" },
+            success: function (response, data) {
+                location.reload();
+            },
+            error: function (err) {
+                location.reload();
+            }
+        });
+    });
+</script>

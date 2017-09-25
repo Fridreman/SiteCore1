@@ -12,6 +12,8 @@ using Microsoft.Extensions.Options;
 using SiteCore1.Models;
 using SiteCore1.Models.AccountViewModels;
 using SiteCore1.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace SiteCore1.Controllers
 {
@@ -40,7 +42,6 @@ namespace SiteCore1.Controllers
             _smsSender = smsSender;
             _logger = loggerFactory.CreateLogger<AccountController>();
         }
-
         //
         // GET: /Account/Login
         [HttpGet]
@@ -77,6 +78,8 @@ namespace SiteCore1.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
+                    user.DateLog = DateTime.Today;
+                    await _userManager.UpdateAsync(user);
                     return RedirectToLocal(returnUrl);
                 }
                 else
@@ -132,18 +135,23 @@ namespace SiteCore1.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, DateReg = DateTime.Today, Verified = false };
                 var result = await _userManager.CreateAsync(user, model.Password);
+                
                 if (result.Succeeded)
                 {
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    List<string> list = new List<string> { "User" };
+                    user.AskVerified = false;
+                    user.CountProject = "0";
+                    await _userManager.AddToRolesAsync(user, list);                    
                     var callbackUrl = Url.Action(
                         "ConfirmEmail",
                         "Account",
                         new { userId = user.Id, code = code },
                         protocol: HttpContext.Request.Scheme);
                     EmailService emailService = new EmailService();
-                    await emailService.SendEmailAsync(model.Email, "Confirm your account",
+                    emailService.SendEmailAsync(model.Email, "Confirm your account",
                         $"Подтвердите регистрацию, перейдя по ссылке: <a href='{callbackUrl}'>Подтвердить.</a>");
                     _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation(3, "User created a new account with password.");

@@ -57,11 +57,14 @@
                 <ul class="nav navbar-nav">
                     <li><a asp-area="" asp-controller="Home" asp-action="Index">@Localizer["Index"]</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Contact">@Localizer["Contact"]</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="Search">Search</a></li>
-                    @if (User.Identity.IsAuthenticated)
+                    <li><a asp-area="" asp-controller="Home" asp-action="ViewAllProject">@Localizer["Contact"]</a></li>
+                    @if (User.IsInRole("Admin"))
                     {
-                        <li><a href="/Home/List">List</a></li>
+                        <li><a href="/Roles/UserList">@Localizer["ListUserRoles"]</a></li>
+                    }
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li><a href="/Manage/UserList">@Localizer["ListUser"]</a></li>
                     }
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
@@ -80,7 +83,7 @@
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-4" align="center">
-                        <br><p>&copy; 2017 - Crow</p>
+                        <br><p>&copy; 2017 - Anthill</p>
                     </div>
                     <div class="col-xs-12 col-md-4" align="center">
                         <br>

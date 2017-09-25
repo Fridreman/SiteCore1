@@ -121,7 +121,7 @@
     <value>Платформа</value>
   </data>
   <data name="Contact" xml:space="preserve">
-    <value>Контакты</value>
+    <value>Все проекты</value>
   </data>
   <data name="Dark" xml:space="preserve">
     <value>Переключить на темную тему</value>
@@ -131,6 +131,12 @@
   </data>
   <data name="Light" xml:space="preserve">
     <value>Перключить на светлую тему</value>
+  </data>
+  <data name="ListUser" xml:space="preserve">
+    <value>Пользователи</value>
+  </data>
+  <data name="ListUserRoles" xml:space="preserve">
+    <value>Роли</value>
   </data>
   <data name="Logo" xml:space="preserve">
     <value>Anthill</value>

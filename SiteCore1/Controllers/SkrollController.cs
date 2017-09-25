@@ -10,12 +10,17 @@ namespace SiteCore1.Controllers
 {
     public class SkrollController : Controller
     {
+        private ProjectContext _context;
         List<Item> Items = new List<Item>();
         int pageSize = 0;
 
+        public SkrollController(ProjectContext context)
+        {
+            _context = context;
+        }
+
         public SkrollController()
         {
-
         }
 
         public List<Item> GetItemsPageOne(int page = 1)

@@ -1,0 +1,35 @@
+﻿@model IEnumerable<SiteCore1.Models.Project>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>            </th>
+            <th>            </th>
+            <th>            </th>
+            <th>            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var project in Model)
+        {
+                <tr>
+                    <td>
+                        <a href="~/Project/Index?=@project.Id">
+                            <img src="@project.ImageTitle" style="float:none;max-width: 100%; height: auto; max-height: 150px;">
+                            </a>
+                    </td>
+                    <td>
+                        <a href="~/Project/Index?=@project.Id">
+                            @project.Title
+                            </a>
+                    </td>
+                    <td>
+                        @(project.Money + "/" + project.Price)
+                    </td>
+                    <td>
+                        @(project.DateEnd)
+                    </td>
+                </tr>
+        }
+    </tbody>
+</table>

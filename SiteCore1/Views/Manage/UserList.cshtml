@@ -1,0 +1,146 @@
+﻿@using SiteCore1.Models
+@{
+    ViewData["Title"] = "Home Page";
+}
+@model IEnumerable<ApplicationUser>
+<h1>Список пользователей</h1>
+
+<div id="modDialog" class="modal fade">
+    <div id="dialogContent" class="modal-dialog"></div>
+</div>
+
+<form name="act">
+    <button value="Del" name="acts" onclick="fun('Del');" class="btn btn-danger">Delete</button>
+    <button value="Ban" name="acts" onclick="fun('Ban');" class="btn btn-group">Ban</button>
+    <button value="UnBan" name="acts" onclick="fun('UnBan');" class="btn btn-group">UnBan</button>
+</form>
+<form name="test">
+    <table class="table">
+        <tr>
+            <th>
+                #
+            </th>
+            <th>
+                <a asp-action="UserList" asp-route-sortOrder="@ViewBag.NameSort">
+                    Логин
+                </a>
+            </th>
+            <th>
+                <a asp-action="UserList" asp-route-sortOrder="@ViewBag.DateRegSort">
+                    Дата регистриции
+                </a>
+            </th>
+            <th>
+                <a asp-action="UserList" asp-route-sortOrder="@ViewBag.DateLogSort">
+                    Последнее логирование
+                </a>
+            </th>
+            <th>
+                <a asp-action="UserList" asp-route-sortOrder="@ViewBag.VerifiedSort">
+                    Подтвержденный
+                </a>
+            </th>
+            <th>
+                <a asp-action="UserList" asp-route-sortOrder="@ViewBag.CountProject">
+                    Кол-во проектов
+                </a>
+            </th>
+            <th>
+                <a asp-action="UserList" asp-route-sortOrder="@ViewBag.IdSort">
+                    Идентификатор
+                </a>
+            </th>
+        </tr>
+        @foreach (ApplicationUser u in Model)
+        {
+            <tr>
+                <td><input type="checkbox" id="check" name="list" value=@u.Email /></td>
+                @if (!u.LockoutEnabled)
+                {
+                    <td>@u.UserName</td>
+                }
+                else
+                {
+                    <td class="YellowTd">@u.UserName</td>
+                }
+                <td>@u.DateReg</td>
+                <td>@u.DateLog</td>
+                @{
+                    var Verified = u.Verified;
+                    if (Verified)
+                    {
+                        <td>true</td>
+                    }
+                    else
+                    {
+                        if (u.AskVerified)
+                        {
+                            <td class="GreenTd">
+                                
+                                    @Html.ActionLink("Await", "Verified", new { id = u.Id }, new { @class = "Verified" })
+                               
+                            </td>
+                        }
+                        else
+                        {
+                            <td>false</td>
+                        }
+                    }
+                }
+                <td>@u.CountProject</td>
+                <td>@u.Id</td>
+            </tr>
+                        }
+    </table>
+</form>
+
+    <script>
+        $(function () {
+            $.ajaxSetup({ cache: false });
+            $(".Verified").click(function (e) {
+                e.preventDefault();
+                $.get(this.href, function (data) {
+                    $('#dialogContent').html(data);
+                    $('#modDialog').modal('show');
+                });
+            });
+        })
+    </script>
+
+    <style>
+        a.Verified {
+            color: #000000
+        }
+        td.YellowTd {
+            background: yellow;
+        }
+        td.GreenTd {
+            background: green;
+        }
+    </style>
+
+    <script language="javascript" type="text/javascript">
+        function fun(e) {
+            var values = [];
+            var idForUser, temp;
+            var cbs = document.forms['test'].elements['list'];
+            for (var i = 0, cbLen = cbs.length; i < cbLen; i++) {
+                if (cbs[i].checked) {
+                    $.ajax({
+                        url: '/Home/NewServiceAsync',
+                        async: true,
+                        type: "POST",
+                        data: { "Name": cbs[i].value, "Value": e },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log("FAIL: " + errorThrown);
+                        },
+                        success: function (data, textStatus, jqXHR) {
+                            console.log("SUCCES");
+                        }
+                    });
+
+                }
+            }
+
+        };
+    </script>

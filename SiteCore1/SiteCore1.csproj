@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Brik.Security.VkontakteMiddleware" Version="1.0.2" />
     <PackageReference Include="dropzone" Version="4.2.0" />
+    <PackageReference Include="Hangfire" Version="1.6.17" />
     <PackageReference Include="HtmlAgilityPack" Version="1.5.2-beta6" />
     <PackageReference Include="Imgur.API" Version="5.0.0-beta1" />
     <PackageReference Include="MailKit" Version="1.12.0" />

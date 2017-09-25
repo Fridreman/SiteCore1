@@ -1,0 +1,40 @@
+﻿@using SiteCore1.Models
+@{
+    ViewData["Title"] = "Project";
+}
+@model Project
+<h1>Список спонсоров</h1>
+@{ 
+    var users = Html.Raw(ViewData["Users"].ToString()).ToString();
+    var pays = ViewData["Pay"].ToString();
+    var Count = users.Count(c => c.ToString() == ";");
+    List<string> user = new List<string>();
+    List<string> pay = new List<string>();
+    for (int a = 0; a < Count; a++)
+    {
+        user.Add(users.Substring(0, users.IndexOf(";")));
+        users = users.Remove(0, users.IndexOf(";") + 1);
+        pay.Add(pays.Substring(0, pays.IndexOf(";")));
+        pays = pays.Remove(0, pays.IndexOf(";") + 1);
+    }
+}
+    <table class="table">
+        <tr>
+            <th>
+                    E-mail
+            </th>
+            <th>
+            </th>
+            <th>
+                    Сумма
+            </th>
+        </tr>
+        @for(int c = 0; c < Count; c++)
+        {
+            <tr>
+                <td>@user.ElementAt(c)</td>
+                <td></td>
+                <td>@pay.ElementAt(c)</td>
+            </tr>
+}
+    </table>

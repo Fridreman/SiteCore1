@@ -24,6 +24,8 @@ using Imgur.API.Endpoints.Impl;
 using System.Diagnostics;
 using Imgur.API.Models;
 using Imgur.API;
+using Hangfire;
+using SiteCore1.Services;
 
 namespace SiteCore1.Controllers
 {
@@ -34,38 +36,63 @@ namespace SiteCore1.Controllers
         public readonly SignInManager<ApplicationUser> signInManager;
         public readonly ILogger _logger;
         private ProjectContext _context;
-        public SkrollController skrollController = new SkrollController();
+        public SkrollController skrollController;
+        private readonly IRecurringJobManager _recurringJob;
 
         public HomeController(UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager, ProjectContext context,
-            ILogger<AccountController> logger, IHostingEnvironment environment)
+            ILogger<AccountController> logger, IHostingEnvironment environment, IRecurringJobManager recurringJob)
         {
+            _recurringJob = recurringJob;
             _context = context;
             _userManager = userManager;
             this.signInManager = signInManager;
             _logger = logger;
             _environment = environment;
+            skrollController = new SkrollController(_context);
         }
-        
+
         public IActionResult Index()
         {
+            RecurringJob.AddOrUpdate(() => CheckProjectsAsync(), Cron.Daily(5, 55), TimeZoneInfo.Local);
             var AllProjects = _context.Projects.ToList();
             List<Project> EnableProjects = new List<Project>();
-            List<Project> ViewProjects = new List<Project>();
             foreach (Project project in AllProjects)
-                if(project.Enable == true)
-                    EnableProjects.Add(project);
-            ViewProjects = EnableProjects.GetRange(EnableProjects.Count - 4, 4);
-
-            for(int TempCountProject = 0; TempCountProject < 4; TempCountProject++)
-            {
-                for(int TempCountNewProject = 0; TempCountNewProject < EnableProjects.Count; TempCountNewProject++)
+                if (project.Enable == true)
                 {
-                    
+                    EnableProjects.Add(project);
                 }
-            }
+            EnableProjects.Sort((a, b) => DateTime.Compare(a.DateStart, b.DateStart));
+            var ViewProject = EnableProjects.GetRange(EnableProjects.Count - 4, 4);
+            EnableProjects.Sort((a, b) => a.Money.CompareTo(b.Money));
+            ViewProject.AddRange(EnableProjects.GetRange(EnableProjects.Count - 4, 4));
+            ViewProject.AddRange(EnableProjects);
+            return View(ViewProject);
+        }
 
-            return View(ViewProjects);
+        public async Task CheckProjectsAsync()
+        {
+            var projects = _context.Projects.ToList();
+            foreach (var project in projects)
+                if (DateTime.Today == project.DateEnd && project.Enable == true)
+                    await TheEndProject(project);
+        }
+
+        private async Task TheEndProject(Project project)
+        {
+            var Athor = project.Name_owner;
+            var users = project.Users;
+            ApplicationUser _applicationUser = await _userManager.FindByNameAsync(Athor);
+            EmailService emailService = new EmailService();
+            await emailService.SendEmailAsync(_applicationUser.Email, "Ваш проект(" + project.Title + ") закончился.", $"<a href='https://localhost:44318/'>Просмотреть проект и спонсоров.</a>");
+            var Count = users.Count(c => c.ToString() == ";");
+            for (int a = 0; a < Count; a++)
+            {
+                var user = await _userManager.FindByEmailAsync(users.Substring(0, users.IndexOf(";")));
+                await emailService.SendEmailAsync(user.Email, "Проект(" + project.Title + ") закончился.", $"<a href='https://localhost:44318/'>Просмотреть проект.</a>");
+                users.Remove(0, users.IndexOf(";"));
+            }
+            await _context.SaveChangesAsync();
         }
 
         [HttpPost]
@@ -121,6 +148,7 @@ namespace SiteCore1.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult About()
         {
             ViewData["Message"] = "Your application description page.";
@@ -136,11 +164,54 @@ namespace SiteCore1.Controllers
             //return View(model);
         }
 
-        public IActionResult Contact()
+        public IActionResult ViewAllProject(int? id)
         {
-            ViewData["Message"] = "Your contact page.";
+            ViewData["Message"] = "All project.";
+            int page = id ?? 0;
+            var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+            if (isAjax)
+            {
+                if (id != 100)
+                    return PartialView("_ViewAllProject", GetProjectPage(page));
+                else
+                    return PartialView("_ViewAllProject", GetProjectPage(1));
+            }
+            return View(GetProjectPage(page));
+        }
 
-            return View();
+        public IActionResult _ViewAllProject()
+        {
+            ViewBag.Message = "Частичное представление.";
+            return _ViewAllProject();
+        }
+
+        public List<Project> GetProjectPage(int page)
+        {
+            var AllProjects = _context.Projects.ToList();
+            List<Project> EnableProjects = new List<Project>();
+            foreach (Project project in AllProjects)
+                if (project.Enable == true)
+                {
+                    EnableProjects.Add(project);
+                }
+            return EnableProjects.GetRange(page, 5);
+        }
+
+        [HttpPost]
+        public PartialViewResult GetProjectPage(Where data)
+        {
+            var AllProjects = _context.Projects.ToList();
+            var Count = 5;
+            List<Project> EnableProjects = new List<Project>();
+            foreach (Project project in AllProjects)
+                if (project.Enable == true)
+                {
+                    EnableProjects.Add(project);
+                }
+            if (EnableProjects.Count - (Count + data.Page) < 0)
+                Count = EnableProjects.Count - data.Page;
+            var Res = PartialView("~/Views/Home/_ViewAllProject.cshtml", EnableProjects.GetRange(data.Page, Count));
+            return Res;
         }
 
         public IActionResult List()
@@ -179,21 +250,33 @@ namespace SiteCore1.Controllers
             if (data.Value == "Del")
                 await DeleteConfirmedAsync(data.Name);
             else
+                if (data.Value == "Ban")
                 await BanConfirmedAsync(data.Name);
+            else
+                await UnBanConfirmedAsync(data.Name);
             return Ok("True");
         }
 
-        public async Task<IActionResult> DeleteConfirmedAsync(string IdForUser)
+        public async Task<IActionResult> DeleteConfirmedAsync(string Email)
         {
-            ApplicationUser user = await _userManager.FindByEmailAsync(IdForUser);
+            ApplicationUser user = await _userManager.FindByEmailAsync(Email);
             await _userManager.DeleteAsync(user);
             return RedirectToAction("Index", "Home");
         }
 
-        public async Task<IActionResult> BanConfirmedAsync(string IdForUser)
+        public async Task<IActionResult> BanConfirmedAsync(string Email)
         {
-            ApplicationUser user = await _userManager.FindByEmailAsync(IdForUser);
-            await _userManager.SetLockoutEndDateAsync(user, DateTime.Now.AddDays(10));
+            ApplicationUser user = await _userManager.FindByEmailAsync(Email);
+            await _userManager.SetLockoutEndDateAsync(user, DateTime.Now.AddYears(10));
+            await _userManager.SetLockoutEnabledAsync(user, true);
+            return RedirectToAction("Index", "Home");
+        }
+
+        public async Task<IActionResult> UnBanConfirmedAsync(string Email)
+        {
+            ApplicationUser user = await _userManager.FindByEmailAsync(Email);
+            await _userManager.SetLockoutEndDateAsync(user, DateTime.Now.AddYears(10));
+            await _userManager.SetLockoutEnabledAsync(user, false);
             return RedirectToAction("Index", "Home");
         }
 

@@ -18,6 +18,7 @@ using Imgur.API.Models;
 using System.Diagnostics;
 using Imgur.API;
 using Imgur.API.Models.Impl;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SiteCore1.Controllers
 {
@@ -51,26 +52,29 @@ namespace SiteCore1.Controllers
             ViewData["DataEnd"] = (projectTemp.DateEnd.Day + "." + projectTemp.DateEnd.Month + "." + projectTemp.DateEnd.Year);
             ViewData["DataStart"] = (projectTemp.DateStart.Day + "." + projectTemp.DateStart.Month + "." + projectTemp.DateStart.Year);
             ViewData["StatusProject"] = GetStatusProject(projectTemp);
+            ViewData["Name_owner"] = projectTemp.Name_owner;
+            ViewData["ProjectId"] = projectTemp.Id;
             if (!projectTemp.Enable)
                 return RedirectToAction("Index", "Home");
             return View();
         }
-        
+
         public string GetStatusProject(Project projectTemp)
         {
             if (DateTime.Now <= projectTemp.DateEnd)
                 if (Int32.Parse(projectTemp.Money) >= Int32.Parse(projectTemp.Price))
                     return "WorkAndFull";
-            
+
                 else
-                    return "WorkAndNotFull"; 
+                    return "WorkAndNotFull";
             else
                 if (Int32.Parse(projectTemp.Money) >= Int32.Parse(projectTemp.Price))
-                    return "NotWorkAndFull"; 
-                else
-                    return "NotWorkAndNotFull";          
+                return "NotWorkAndFull";
+            else
+                return "NotWorkAndNotFull";
         }
-        
+
+        [Authorize(Roles = "UserUp")]
         public async Task<ActionResult> Create(int id)
         {
             _applicationUser = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -93,10 +97,11 @@ namespace SiteCore1.Controllers
             return View();
         }
 
-         [HttpPost]
-         [ValidateAntiForgeryToken]
-         public async Task<ActionResult> CreateAsync(ProjectSetup model)
-         {
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "UserUp")]
+        public async Task<ActionResult> CreateAsync(ProjectSetup model)
+        {
             if (ModelState.IsValid)
             {
                 await GetProjectIdAsync();
@@ -106,6 +111,9 @@ namespace SiteCore1.Controllers
                 projectTemp.DateStart = DateTime.Today;
                 projectTemp.Price = model.Price;
                 projectTemp.Money = "0";
+                projectTemp.Name_owner = _applicationUser.UserName;
+                projectTemp.Users = "";
+                projectTemp.Pay = "";
                 _context.SaveChanges();
                 return RedirectToAction("CreateContent", "Project");
             }
@@ -113,21 +121,17 @@ namespace SiteCore1.Controllers
                 return View(Request.Headers["Referer"]);
         }
 
+        [Authorize(Roles = "UserUp")]
         public IActionResult CreateContent()
         {
             return View();
         }
 
-        /*[HttpPost]
-        public async Task<IActionResult> Upload(IList<IFormFile> files)
-        {
-            return View();
-        }*/
-
         [HttpPost]
+        [Authorize(Roles = "UserUp")]
         public async Task UploadImageAsync(IList<IFormFile> files)
         {
-            await GetProjectIdAsync();
+            GetProjectIdAsyncByJustBackRequest();
             try
             {
                 var client = new ImgurClient("01bd44056654677", "8a9f05a8ce2dc6321cb64fe735cbc41cdbca02da");
@@ -175,35 +179,21 @@ namespace SiteCore1.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add update logic here
-
-                return RedirectToAction("Index");
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "UserUp")]
         public async Task<ActionResult> EditContent(HtmlText model)
         {
             _applicationUser = await _userManager.FindByNameAsync(User.Identity.Name);
             GetProjectId((Int32.Parse(_applicationUser.CountProject) - 1).ToString());
             var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
 
-            if(projectTemp.Enable)
+            if (projectTemp.Enable)
                 return RedirectToAction("Index", "Home");
             projectTemp.Text = model.HtmlContent;
             _context.SaveChanges();
             return RedirectToAction("CreateLots");
         }
 
+        [Authorize(Roles = "UserUp")]
         public void Change_ImageTitle(string url)
         {
             var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
@@ -218,10 +208,13 @@ namespace SiteCore1.Controllers
             ProjectId = _applicationUser.Id + "_" + ProjectId.Remove(0, ProjectId.IndexOf("=") + 1);
         }
 
-        public async Task GetProjectIdAsyncByJustBackRequest()
+        public void GetProjectIdAsyncByJustBackRequest()
         {
             ProjectId = Request.Headers["Referer"].ToString();
-            ProjectId = ProjectId.Remove(0, ProjectId.IndexOf("=") + 1);
+            if(ProjectId.IndexOf("=") == -1)
+                ProjectId = ProjectId.Remove(0, ProjectId.LastIndexOf("/") + 1);
+            else
+                ProjectId = ProjectId.Remove(0, ProjectId.IndexOf("=") + 1);
         }
 
         public void GetProjectId(string id)
@@ -229,6 +222,7 @@ namespace SiteCore1.Controllers
             ProjectId = _applicationUser.Id + "_" + id;
         }
 
+        [Authorize(Roles = "UserUp")]
         public async Task<ActionResult> CreateLots()
         {
             _applicationUser = await _userManager.FindByNameAsync(User.Identity.Name);
@@ -243,17 +237,18 @@ namespace SiteCore1.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "UserUp")]
         public async Task<IActionResult> SendLots([FromBody] SendLot[] model)
         {
             _applicationUser = await _userManager.FindByNameAsync(User.Identity.Name);
             GetProjectId((Int32.Parse(_applicationUser.CountProject) - 1).ToString());
             var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
-            
+
             if (projectTemp.Enable)
                 return RedirectToAction("Index", "Home");
             projectTemp.Enable = true;
             String Lots = "";
-            for(int i = 0; i < model.Length; i++)
+            for (int i = 0; i < model.Length; i++)
             {
                 Lots = Lots + model[i].Text + "_" + model[i].Price + ";";
             }
@@ -263,17 +258,132 @@ namespace SiteCore1.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [Authorize(Roles = "User")]
+        public ActionResult GetMoney()
+        {
+            GetProjectIdAsyncByJustBackRequest();
+            ViewData["ProjectId"] = ProjectId;
+
+            return View();
+        }
+
         [HttpPost]
+        [Authorize(Roles = "User")]
         public async Task<ActionResult> GetMoney(Content money)
         {
-            await GetProjectIdAsyncByJustBackRequest();
-            var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
-
+            var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == money.Name);
+            ApplicationUser _applicationUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            projectTemp.Users = projectTemp.Users + _applicationUser.Email + ";";
             if (projectTemp.Money == null)
                 projectTemp.Money = "0";
             projectTemp.Money = (Int32.Parse(projectTemp.Money) + Int32.Parse(money.Value)).ToString();
+            projectTemp.Pay = projectTemp.Pay + money.Value + ";";
             _context.SaveChanges();
-            return Json("Ok");
+            return RedirectToAction(Request.Headers["Referer"]);
+        }
+
+        [Authorize(Roles = "UserUp")]
+        public ActionResult EditHead(string id)
+        {
+            GetProjectIdAsyncByJustBackRequest();
+            var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
+            if (!User.IsInRole("Admin"))
+                if (User.Identity.Name != projectTemp.Name_owner)
+                    return RedirectToAction("Index", "Home");
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "UserUp")]
+        public ActionResult EditHead(ProjectSetup model)
+        {
+            if (ModelState.IsValid)
+            {
+                GetProjectIdAsyncByJustBackRequest();
+                var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
+                projectTemp.Title = model.Title;
+                projectTemp.DateEnd = model.Date;
+                projectTemp.Price = model.Price;
+                _context.SaveChanges();
+                return RedirectToAction("Index", "Home");
+            }
+            else
+                return View(Request.Headers["Referer"]);
+        }
+
+        [Authorize(Roles = "UserUp")]
+        public ActionResult EditText(string id)
+        {
+            GetProjectIdAsyncByJustBackRequest();
+            var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
+            if (!User.IsInRole("Admin"))
+                if (User.Identity.Name != projectTemp.Name_owner)
+                    return RedirectToAction("Index", "Home");
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "UserUp")]
+        public ActionResult EditText(HtmlText model)
+        {
+            GetProjectIdAsyncByJustBackRequest();
+            var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
+            projectTemp.Text = model.HtmlContent;
+            _context.SaveChanges();
+            return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize(Roles = "UserUp")]
+        public ActionResult EditLots()
+        {
+            GetProjectIdAsyncByJustBackRequest();
+            var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
+            if (!User.IsInRole("Admin"))
+                if (User.Identity.Name != projectTemp.Name_owner)
+                    return RedirectToAction("Index", "Home");
+            ViewData["Price"] = projectTemp.Price;
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "UserUp")]
+        public IActionResult EditLots([FromBody] SendLot[] model)
+        {
+            GetProjectIdAsyncByJustBackRequest();
+            var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
+            String Lots = "";
+            for (int i = 0; i < model.Length; i++)
+            {
+                Lots = Lots + model[i].Text + "_" + model[i].Price + ";";
+            }
+            projectTemp.Lots = Lots;
+            _context.SaveChanges();
+            return RedirectToAction("Index", "Project", ProjectId);
+        }
+
+        [Authorize(Roles = "Admin")]
+        public ActionResult DisableProject()
+        {
+            GetProjectIdAsyncByJustBackRequest();
+            var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
+            if(!User.IsInRole("Admin"))
+                if (User.Identity.Name != projectTemp.Name_owner)
+                    return RedirectToAction("Index", "Home");
+            projectTemp.Enable = false;
+            _context.SaveChanges();
+            return RedirectToAction("Index", "Home");
+        }
+        [Authorize(Roles = "UserUp")]
+        public ActionResult ShowSponsor(string id)
+        {
+            GetProjectIdAsyncByJustBackRequest();
+            var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
+            if (!User.IsInRole("Admin"))
+                if (User.Identity.Name != projectTemp.Name_owner)
+                    return RedirectToAction("Index", "Home");
+            ViewData["Users"] = projectTemp.Users;
+            ViewData["Pay"] = projectTemp.Pay;
+            return View();
         }
     }
 }

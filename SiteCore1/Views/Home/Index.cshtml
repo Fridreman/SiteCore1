@@ -4,7 +4,7 @@
 }
 
 @{ 
-    string[] NameTitle = new string[] { "Новые проекты" };
+    string[] NameTitle = new string[] { "Новые проекты", "Наиболее профинансированные" };
 
 }
 
@@ -15,8 +15,9 @@
         for (int CountProject = 0; CountProject < NameTitle.Length; CountProject++)
         {
             <h2 align="center">@NameTitle[CountProject]</h2>
+            <hr />
         <div class="row">
-            @for (int a = 0; a < (Model.Count() / NameTitle.Length); IndexModel++, a++)
+            @for (int a = 0; a < 4; IndexModel++, a++)
             {
             <div class="col-md-3">
                 <a href="~/Project/Index?=@Model.ElementAt(IndexModel).Id">

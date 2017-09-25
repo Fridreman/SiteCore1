@@ -11,6 +11,14 @@ using SiteCore1.Models;
 using SiteCore1.Models.ManageViewModels;
 using SiteCore1.Services;
 using SiteCore1.Data;
+using Microsoft.AspNetCore.Http;
+using Imgur.API.Authentication.Impl;
+using Imgur.API.Endpoints.Impl;
+using Imgur.API.Models;
+using System.IO;
+using System.Diagnostics;
+using Imgur.API;
+using Microsoft.EntityFrameworkCore;
 
 namespace SiteCore1.Controllers
 {
@@ -55,6 +63,7 @@ namespace SiteCore1.Controllers
                 : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
                 : "";
             ViewData["CountProject"] = applicationUser.CountProject;
+            ViewData["AskVerified"] = applicationUser.AskVerified.ToString();
 
             var user = await GetCurrentUserAsync();
             if (user == null)
@@ -342,6 +351,130 @@ namespace SiteCore1.Controllers
                 await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
             }
             return RedirectToAction(nameof(ManageLogins), new { Message = message });
+        }
+
+        //Upload Password
+        [HttpPost]
+        [Authorize(Roles = "User")]
+        public async Task UploadImageAsync(IList<IFormFile> files)
+        {
+            try
+            {
+                ApplicationUser _applicationUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                var client = new ImgurClient("01bd44056654677", "8a9f05a8ce2dc6321cb64fe735cbc41cdbca02da");
+                var endpoint = new ImageEndpoint(client);
+                IImage image;
+                foreach (var file in files)
+                {
+                    if (file.Length > 0)
+                    {
+                        _applicationUser.AskVerified = true;
+                        using (var fileStream = file.OpenReadStream())
+                        using (var ms = new MemoryStream())
+                        {
+                            fileStream.CopyTo(ms);
+                            var fileBytes = ms.ToArray();
+                            string s = Convert.ToBase64String(fileBytes);
+                            image = await endpoint.UploadImageBinaryAsync(fileBytes);
+                        }
+                        Debug.Write("Image uploaded. Image Url: " + image.Link);
+                        _applicationUser.ImagePasport = image.Link;
+                        await _userManager.UpdateAsync(_applicationUser);
+                    }
+                }
+            }
+            catch (ImgurException imgurEx)
+            {
+                Debug.Write("An error occurred uploading an image to Imgur.");
+                Debug.Write(imgurEx.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UserList(SortState sortOrder = SortState.NameAsc)
+        {
+            IQueryable<ApplicationUser> users = _userManager.Users;
+            
+            ViewData["NameSort"] = sortOrder == SortState.NameAsc ? SortState.NameDesc : SortState.NameAsc;
+            ViewData["DateRegSort"] = sortOrder == SortState.DateRegAsc ? SortState.DateRegDesc : SortState.DateRegAsc;
+            ViewData["DateLogSort"] = sortOrder == SortState.DateLogAsc ? SortState.DateLogDesc : SortState.DateLogAsc;
+            ViewData["VerifiedSort"] = sortOrder == SortState.VerifiedAsc ? SortState.VerifiedDesc : SortState.VerifiedAsc;
+            ViewData["CountProject"] = sortOrder == SortState.IdAsc ? SortState.IdDesc : SortState.IdAsc;
+            ViewData["IdSort"] = sortOrder == SortState.CountProjectAsc ? SortState.CountProjectDesc : SortState.CountProjectAsc;
+
+            switch (sortOrder)
+            {
+                case SortState.NameDesc:
+                    users = users.OrderByDescending(s => s.UserName);
+                    break;
+                case SortState.DateRegAsc:
+                    users = users.OrderBy(s => s.DateReg);
+                    break;
+                case SortState.DateRegDesc:
+                    users = users.OrderByDescending(s => s.DateReg);
+                    break;
+                case SortState.DateLogAsc:
+                    users = users.OrderBy(s => s.DateLog);
+                    break;
+                case SortState.DateLogDesc:
+                    users = users.OrderByDescending(s => s.DateLog);
+                    break;
+                case SortState.VerifiedAsc:
+                    users = users.OrderBy(s => s.Verified);
+                    break;
+                case SortState.VerifiedDesc:
+                    users = users.OrderByDescending(s => s.Verified);
+                    break;
+                case SortState.IdAsc:
+                    users = users.OrderBy(s => s.Id);
+                    break;
+                case SortState.IdDesc:
+                    users = users.OrderByDescending(s => s.Id);
+                    break;
+                case SortState.CountProjectAsc:
+                    users = users.OrderBy(s => s.CountProject);
+                    break;
+                case SortState.CountProjectDesc:
+                    users = users.OrderByDescending(s => s.CountProject);
+                    break;
+                default:
+                    users = users.OrderBy(s => s.UserName);
+                    break;
+            }
+            return View(await users.AsNoTracking().ToListAsync());
+        }
+
+        public async Task<ActionResult> Verified(string id)
+        {
+            ApplicationUser user = await _userManager.FindByIdAsync(id);
+            ViewData["Image"] = user.ImagePasport;
+            if (user != null)
+                return PartialView(user);
+            return PartialView("Null");
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> VerifiedTrue(Where model)
+        {
+            ApplicationUser _applicationUser = await _userManager.FindByNameAsync(model.Href);
+            _applicationUser.Verified = true;
+            _applicationUser.AskVerified = false;
+            List < string > role = new List<string> { "UserUp" };
+            await _userManager.AddToRolesAsync(_applicationUser, role);
+            await _userManager.UpdateAsync(_applicationUser);
+            return RedirectToAction("Manage", "UserList");
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> VerifiedFalse(Where model)
+        {
+            ApplicationUser _applicationUser = await _userManager.FindByNameAsync(model.Href);
+            _applicationUser.Verified = false;
+            _applicationUser.AskVerified = false;
+            await _userManager.UpdateAsync(_applicationUser);
+            return RedirectToAction("Manage", "UserList");
         }
 
         #region Helpers

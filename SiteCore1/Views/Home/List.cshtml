@@ -13,35 +13,36 @@
         <br>
     }
 </form>
+
 <form name="act">
     <button value="Del" name="acts" onclick="fun('Del');">Delete</button>
     <button value="Ban" name="acts" onclick="fun('Ban');">Ban</button>
 </form>
 
-    <script language="javascript" type="text/javascript">
-        function fun(e) {
-            var values = [];
-            var idForUser, temp;
-            var cbs = document.forms['test'].elements['list'];
-            for (var i = 0, cbLen = cbs.length; i < cbLen; i++) {
-                if (cbs[i].checked) {
-                    $.ajax({
-                        url: '/Home/NewServiceAsync',
-                        async: true,
-                        type: "POST",
-                        data: { "Name": cbs[i].value, "Value" :e },
-                        error: function (jqXHR, textStatus, errorThrown) {
-                            console.log("FAIL: " + errorThrown);
-                        },
-                        success: function (data, textStatus, jqXHR) {
-                            console.log("SUCCES");
-                        }
-                    });
+<script language="javascript" type="text/javascript">
+    function fun(e) {
+        var values = [];
+        var idForUser, temp;
+        var cbs = document.forms['test'].elements['list'];
+        for (var i = 0, cbLen = cbs.length; i < cbLen; i++) {
+            if (cbs[i].checked) {
+                $.ajax({
+                    url: '/Home/NewServiceAsync',
+                    async: true,
+                    type: "POST",
+                    data: { "Name": cbs[i].value, "Value" :e },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log("FAIL: " + errorThrown);
+                    },
+                    success: function (data, textStatus, jqXHR) {
+                        console.log("SUCCES");
+                    }
+                });
 
-                }
             }
+        }
 
-        };
-    </script>
+    };
+</script>
 
 

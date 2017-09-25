@@ -10,10 +10,8 @@ namespace SiteCore1
 {
     public class Program
     {
-        public static List<Item> Items = new List<Item>();
         public static void Main(string[] args)
         {
-            
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())

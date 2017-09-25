@@ -1,0 +1,42 @@
+﻿@model SiteCore1.Models.HtmlText
+@{
+    ViewData["Title"] = "Edit Project";
+}
+<h2>@ViewData["Title"].</h2>
+
+@using (Html.BeginForm("EditText", "Project", FormMethod.Post, new { onsubmit = "return upload(this);" }))
+{
+    @Html.AntiForgeryToken()
+    <div>
+        <!-- This will contain your HtmlContent and use the TinyMCE editor-->
+        @Html.TextAreaFor(model => model.HtmlContent)
+        <input type="submit" value="Create" class="btn btn-default" />
+    </div>
+}
+
+<!-- Script to wire up your TinyMCE editor -->
+<script src="~/lib/tinymce/js/tinymce/tinymce.min.js"></script>
+<script type="text/javascript">
+    // Initialize your tinyMCE Editor with your preferred options
+    tinymce.init({
+        selector: 'textarea',
+        height: 500,
+        menubar: false,
+        plugins: [
+            'advlist autolink lists link image charmap print preview anchor textcolor',
+            'searchreplace visualblocks code fullscreen',
+            'insertdatetime media table contextmenu paste code help'
+        ],
+        toolbar: 'insert | undo redo |  styleselect | bold italic backcolor  | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+        content_css: [
+            '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
+            '//www.tinymce.com/css/codepen.min.css']
+    });
+
+    function upload(form) {
+        tinymce.activeEditor.uploadImages(function (success) {
+            form.submit();
+        });
+        return false;
+    }
+</script>

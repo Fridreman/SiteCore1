@@ -121,7 +121,7 @@
     <value>Platform</value>
   </data>
   <data name="Contact" xml:space="preserve">
-    <value>Contact</value>
+    <value>All Project</value>
   </data>
   <data name="Dark" xml:space="preserve">
     <value>Turn on a Dark theme</value>
@@ -131,6 +131,12 @@
   </data>
   <data name="Light" xml:space="preserve">
     <value>Turn on a Light theme</value>
+  </data>
+  <data name="ListUser" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="ListUserRoles" xml:space="preserve">
+    <value>Roles</value>
   </data>
   <data name="Logo" xml:space="preserve">
     <value>Anthill</value>

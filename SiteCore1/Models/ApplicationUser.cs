@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 
 namespace SiteCore1.Models
 {
@@ -14,5 +15,10 @@ namespace SiteCore1.Models
     public class ApplicationUser : IdentityUser
     {
         public string CountProject { get; set; }
+        public string ImagePasport { get; set; }
+        public DateTime DateReg { get; set; }
+        public DateTime DateLog { get; set; }
+        public bool Verified { get; set; }
+        public bool AskVerified { get; set; }
     }
 }

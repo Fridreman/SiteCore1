@@ -19,6 +19,7 @@ namespace SiteCore1.Models
         [Required(ErrorMessage = "Неверно указаны средства проекта")]
         [RegularExpression(@"[\d]+$", ErrorMessage = "Неверно указаны средства проекта")]
         public string Price { get; set; }
+        public string ProjectId { get; set; } = "";
     }
 
     public class ProjectSetupContent
@@ -57,6 +58,9 @@ namespace SiteCore1.Models
         public DateTime DateStart { get; set; }
         public DateTime DateEnd { get; set; }
         public string Money { get; set; }
+        public string Name_owner { get; set; }
+        public string Users { get; set; }
+        public string Pay { get; set; }
     }
 
     public class SendLot

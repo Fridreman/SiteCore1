@@ -1,6 +1,6 @@
 ﻿@model SiteCore1.Models.ProjectSetup
 @{
-    ViewData["Title"] = "Create Project";
+    ViewData["Title"] = "Edit Project";
 }
 <h2>@ViewData["Title"].</h2>
 
@@ -15,8 +15,9 @@
     </div>
 </div>
 
-<form asp-action="CreateAsync" asp-controller="Project">
+<form asp-action="EditHead" asp-controller="Project">
     <div>
+
         <div class="validation" asp-validation-summary="ModelOnly"></div>
         <div class="form-group">
             <label class="control-label">Название проекта</label>

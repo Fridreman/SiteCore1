@@ -39,11 +39,43 @@
                         switch (@Html.Raw(ViewData["StatusProject"]).ToString())
                         {
                             case "WorkAndFull":
-                                <input type="button" onclick="GetMoney();" value="Профинансировать проект" class="btn btn-default" />
+                                <a asp-area="" asp-controller="Project" asp-action="GetMoney">
+                                    <input type="button" value="Профинансировать проект" class="btn btn-info" />
+                                </a>
                                 break;
                             case "WorkAndNotFull":
-                                <input type="button" onclick="GetMoney();" value="Профинансировать проект" class="btn btn-default" />
+                                <a asp-area="" asp-controller="Project" asp-action="GetMoney">
+                                    <input type="button" value="Профинансировать проект" class="btn btn-info" />
+                                </a>
                                 break;
+                        }
+                    }
+                    <br />
+                    @{
+                        if ((User.Identity.Name == @Html.Raw(ViewData["Name_owner"]).ToString()) || User.IsInRole("Admin"))
+                        {
+                            <a asp-area="" asp-route-id="@ViewData["ProjectId"].ToString()" asp-controller="Project" asp-action="EditHead">
+                                <input type="button" value="Edit Head" class="btn btn-primary" />
+                            </a>
+                            <br />
+                            <a asp-area="" asp-route-id="@ViewData["ProjectId"].ToString()" asp-controller="Project" asp-action="EditText">
+                                <input type="button" value="Edit Content" class="btn btn-primary" />
+                            </a>
+                            <br />
+                            <a asp-area="" asp-route-id="@ViewData["ProjectId"].ToString()" asp-controller="Project" asp-action="EditLots">
+                                <input type="button" value="Edit Lots" class="btn btn-primary" />
+                            </a>
+                            <br />
+                            <a asp-area="" asp-route-id="@ViewData["ProjectId"].ToString()" asp-controller="Project" asp-action="ShowSponsor">
+                                <input type="button" value="Show sponsor" class="btn btn-primary" />
+                            </a>
+                            <br />
+                            if (User.IsInRole("Admin"))
+                            {
+                                <a asp-area="" asp-route-id="@ViewData["ProjectId"].ToString()" asp-controller="Project" asp-action="DisableProject">
+                                    <input type="button" value="Disable project" class="btn btn-danger" />
+                                </a>
+                            }
                         }
                     }
                 </div>

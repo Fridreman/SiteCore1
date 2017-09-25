@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Create Project";
+    ViewData["Title"] = "Edit Project";
 }
 <h2>@ViewData["Title"].</h2>
 
@@ -52,7 +52,7 @@
                 $.ajax({
                     type: "POST",
                     contentType: "application/json; charset=utf-8",
-                    url: "/Project/SendLots",
+                    url: "/Project/EditLots",
                     data: JSON.stringify(arr),
                     dataType: "json",
                     success: function (response, data) {

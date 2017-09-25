@@ -12,11 +12,41 @@
 <div>
     <h4>Пользовательское меню</h4>
     <hr />
-    <a href=@url>
-        <button type="button" class="btn btn-success">
-            Создать проект
-        </button>
-    </a>
+    @if (!User.IsInRole("UserUp"))
+    {
+        if (@Html.Raw(ViewData["AskVerified"].ToString()).ToString() == "False")
+        {
+        <div class="alert alert-warning">
+            <strong>Чтобы создавать проекты необходимо пройти проверку личности, для этого загрузите свой скан паспорта, либо другой удостоверяющий документ.</strong>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Загрузите скан паспорта и дождитесь ответа администрации.</label>
+            <div id="dropzone">
+                <form action="/Manage/UploadImageAsync" class="dropzone needsclick dz-clickable" id="uploader">
+                    <div class="dz-message needsclick">
+                        Перетащите сюда скан паспорта, либо любой другой удостоверяющий документ.<br>
+                    </div>
+                </form>
+            </div>
+        </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <strong>Чтобы создавать проекты необходимо пройти проверку личности! Вы уже отправили данные, дождитесь ответа.</strong>
+            </div>
+        }
+    }
+    @if (User.IsInRole("UserUp"))
+    {
+        <a href=@url>
+            <button type="button" class="btn btn-success">
+                Создать проект
+            </button>
+        </a>
+    }
+    <br />
+    <br />
     <dl class="dl-horizontal">
         <dt>Password:</dt>
         <dd>
@@ -31,3 +61,16 @@
         </dd>
     </dl>
 </div>
+
+<script>
+    Dropzone.autoDiscover = false;
+    var myDropzone = new Dropzone('#uploader', {
+        url: '/Manage/UploadImageAsync',
+        maxFilesize: 5,
+        maxFiles: 1,
+        uploadMultiple: false,
+        parallelUploads: 1,
+        acceptedFiles: "image/*",
+        autoProcessQueue: true,
+    });
+</script>

@@ -1,0 +1,47 @@
+﻿@{
+    ViewData["Title"] = "Projects";
+}
+<h2>@ViewData["Message"]</h2>
+
+<div id="scrolList">
+    @Html.Partial("_ViewAllProject")
+</div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script language="javascript" type="text/javascript">
+    $(function (e) {
+        var page = 0;
+        var href = "name";
+        var _inCallback = false;
+        var url = "/Home/GetProjectPage";
+        function loadProject() {
+            if (page > -1 && !_inCallback) {
+                _inCallback = true;
+                page = page + 5;
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: { "Page": page, "Href": href },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                    },
+                    success: function (data, textStatus) {
+                        if (data != '') {
+                            $("#scrolList").append(data);
+                        }
+                        else {
+                            page = -1;
+                        }
+                        _inCallback = false;
+                    }
+                });
+            }
+        }
+
+        $(window).scroll(function () {
+            if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+                loadProject();
+            }
+        });
+    });
+
+</script>

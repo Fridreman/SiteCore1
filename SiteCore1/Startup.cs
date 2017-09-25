@@ -19,6 +19,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
+using Hangfire;
 
 namespace SiteCore1
 {
@@ -76,6 +77,8 @@ namespace SiteCore1
                 .AddEntityFrameworkStores<Data.DbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddMvc();
 
             // Add application services.
@@ -118,6 +121,9 @@ namespace SiteCore1
 
             app.UseIdentity();
 
+            app.UseHangfireServer();
+            app.UseHangfireDashboard();
+
             // Add external authentication middleware below. To configure them please see https://go.microsoft.com/fwlink/?LinkID=532715
 
             app.UseVkontakteAuthentication(new VkontakteOptions
@@ -146,5 +152,6 @@ namespace SiteCore1
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
+        
     }
 }
