@@ -54,7 +54,7 @@ namespace SiteCore1.Controllers
 
         public IActionResult Index()
         {
-            RecurringJob.AddOrUpdate(() => CheckProjectsAsync(), Cron.Daily(5, 55), TimeZoneInfo.Local);
+            RecurringJob.AddOrUpdate(() => CheckProjectsAsync(), Cron.Daily(), TimeZoneInfo.Local);
             var AllProjects = _context.Projects.ToList();
             List<Project> EnableProjects = new List<Project>();
             foreach (Project project in AllProjects)

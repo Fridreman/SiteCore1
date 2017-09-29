@@ -131,7 +131,7 @@ namespace SiteCore1.Controllers
         [Authorize(Roles = "UserUp")]
         public async Task UploadImageAsync(IList<IFormFile> files)
         {
-            GetProjectIdAsyncByJustBackRequest();
+            await GetProjectIdAsync();
             try
             {
                 var client = new ImgurClient("01bd44056654677", "8a9f05a8ce2dc6321cb64fe735cbc41cdbca02da");
@@ -317,8 +317,12 @@ namespace SiteCore1.Controllers
             GetProjectIdAsyncByJustBackRequest();
             var projectTemp = _context.Projects.FirstOrDefault(c => c.Id == ProjectId);
             if (!User.IsInRole("Admin"))
+            {
                 if (User.Identity.Name != projectTemp.Name_owner)
+                {
                     return RedirectToAction("Index", "Home");
+                }
+            }
             return View();
         }
 

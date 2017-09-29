@@ -1,4 +1,6 @@
-﻿@*
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
@@ -7,14 +9,14 @@
 <br />
 <br />
 <p align="center">
-    <input type="button" onclick="GetMoney();" value="Профинансировать проект" class="btn btn-default" />
+    <input type="button" onclick="GetMoney();" value="@Localizer["St1"]" class="btn btn-default" />
 </p>
 
 <script>
     function GetMoney() {
-        var donateMoney = prompt("Поддержать проект(BYN): ", "");
+        var donateMoney = prompt("@Localizer["St2"] ", "");
         if (donateMoney == 0 || !isFinite(donateMoney)) {
-            alert("Необходимо целое число.");
+            alert("@Localizer["St3"]");
         }
         else {
             $.ajax({

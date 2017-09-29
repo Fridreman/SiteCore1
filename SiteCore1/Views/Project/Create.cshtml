@@ -1,15 +1,18 @@
 ﻿@model SiteCore1.Models.ProjectSetup
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 @{
-    ViewData["Title"] = "Create Project";
+    ViewData["Title"] = @Localizer["CreateProject"];
 }
 <h2>@ViewData["Title"].</h2>
 
 <div class="form-group">
-    <label class="control-label">Обложка проекта</label>
+    <label class="control-label">@Localizer["ImageForProject"]</label>
     <div id="dropzone">
         <form action="/Project/UploadImageAsync" class="dropzone needsclick dz-clickable" id="uploader">
             <div class="dz-message needsclick">
-                Перетащите сюда обложку проекта либо кликните для загрузки.<br>
+                @Localizer["Image"]
+                <br>
             </div>
         </form>
     </div>
@@ -19,24 +22,24 @@
     <div>
         <div class="validation" asp-validation-summary="ModelOnly"></div>
         <div class="form-group">
-            <label class="control-label">Название проекта</label>
+            <label class="control-label">@Localizer["NameProject"]</label>
             <input type="text" asp-for="Title" class="form-control" />
             <span asp-validation-for="Title"></span>
         </div>
 
         <div class="form-group">
-            <label class="control-label">Дата окончания проекта</label>
+            <label class="control-label">@Localizer["Date"]</label>
             <input type="date" asp-for="Date" class="form-control" />
             <span asp-validation-for="Date"></span>
         </div>
 
         <div class="form-group">
-            <label class="control-label">Сумма сбора(сколько средств необходимо для полной реализации проекта)</label>
+            <label class="control-label">@Localizer["Summa"]</label>
             <input type="text" asp-for="Price" class="form-control" />
             <span asp-validation-for="Price"></span>
         </div>
     </div>
-    <input id="button" type="submit" value="Создать проект" class="btn btn-default" />
+    <input id="button" type="submit" value="@Localizer["Create"]" class="btn btn-default" />
 </form>
 
 <script>

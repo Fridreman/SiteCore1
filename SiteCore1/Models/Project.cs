@@ -10,7 +10,7 @@ namespace SiteCore1.Models
     public class ProjectSetup
     {
         [Required(ErrorMessage = "Не указано название проекта")]
-        [StringLength(20, MinimumLength = 3, ErrorMessage = "Длина строки должна быть от 3 до 20 символов")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Длина строки должна быть от 3 до 50 символов")]
         public string Title { get; set; }
         [Required(ErrorMessage = "Неверно указана дата")]
         [DataType(DataType.Date)]

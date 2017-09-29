@@ -1,11 +1,13 @@
-﻿@{
-    ViewData["Title"] = "Create Project";
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = @Localizer["CreateProject"];
 }
 <h2>@ViewData["Title"].</h2>
 
-<INPUT type="button" value="Добавить цель" onclick="addRow('dataTable')" class="btn btn-default" />
+<INPUT type="button" value="@Localizer["AddTarget"]" onclick="addRow('dataTable')" class="btn btn-default" />
               &nbsp;  
-<INPUT type="button" value="Удалить цель" onclick="deleteRow('dataTable')" class="btn btn-default" />
+<INPUT type="button" value="@Localizer["DelTarget"]" onclick="deleteRow('dataTable')" class="btn btn-default" />
 <br />
 <br />
 
@@ -14,7 +16,7 @@
     </table>
 </form>
 <br />
-<button id="Send" class="btn btn-default">Create</button>
+<button id="Send" class="btn btn-default">@Localizer["Create"]</button>
 
 <SCRIPT language="javascript">
     var count = 0;
@@ -26,9 +28,9 @@
             var point = 1, Amount = 0;
             $('.textbox').each(function () {
                 var nam = document.getElementById("textbox" + tempCount.toString()).value;
-                if (nam.length > 20 || nam.length < 3)
+                if (nam.length > 50 || nam.length < 3)
                 {
-                    alert("Цель должна быть от 3 до 20 символов..");
+                    alert("@Localizer["Str1"]");
                     point = 0;
                     return;
                 }
@@ -36,7 +38,7 @@
                 val = document.getElementById("pricebox" + tempCount.toString()).value;
                 if (val == 0 || !isFinite(val))
                 {
-                    alert("В графе 'средства' должно быть целое число.");
+                    alert("@Localizer["Str2"]");
                     point = 0;
                     return;
                 }
@@ -46,7 +48,7 @@
             });
             if (Amount != @Html.Raw(ViewData["Price"])) {
                 point = 0;
-                alert("Cумма средств целей должна быть равна конечному сбору проекта..");
+                alert("@Localizer["Str3"]");
             }
             if (point == 1) {
                 $.ajax({
@@ -64,7 +66,7 @@
                 });
             } else { arr = [];}
         }
-        else { alert("Минимум одна цель.."); }
+        else { alert("@Localizer["Str4"]"); }
     });
 
     function addRow(tableID) {

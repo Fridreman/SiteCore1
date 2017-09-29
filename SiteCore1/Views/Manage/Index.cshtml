@@ -1,7 +1,9 @@
 ﻿@model IndexViewModel
 @using SiteCore1.Models;
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 @{
-    ViewData["Title"] = "Manage your account";
+    ViewData["Title"] = @Localizer["Manageyouraccount"];
 }
 
 <h2>@ViewData["Title"].</h2>
@@ -10,21 +12,22 @@
     var url = "/Project/Create" + "?=" + @ViewData["CountProject"];
 }
 <div>
-    <h4>Пользовательское меню</h4>
+    <h4>@Localizer["Menu"]</h4>
     <hr />
     @if (!User.IsInRole("UserUp"))
     {
         if (@Html.Raw(ViewData["AskVerified"].ToString()).ToString() == "False")
         {
         <div class="alert alert-warning">
-            <strong>Чтобы создавать проекты необходимо пройти проверку личности, для этого загрузите свой скан паспорта, либо другой удостоверяющий документ.</strong>
+            <strong>@Localizer["warning"]</strong>
         </div>
         <div class="form-group">
-            <label class="control-label">Загрузите скан паспорта и дождитесь ответа администрации.</label>
+            <label class="control-label">@Localizer["download"]</label>
             <div id="dropzone">
                 <form action="/Manage/UploadImageAsync" class="dropzone needsclick dz-clickable" id="uploader">
                     <div class="dz-message needsclick">
-                        Перетащите сюда скан паспорта, либо любой другой удостоверяющий документ.<br>
+                        @Localizer["dropzone"]
+                        <br>
                     </div>
                 </form>
             </div>
@@ -33,7 +36,7 @@
         else
         {
             <div class="alert alert-info">
-                <strong>Чтобы создавать проекты необходимо пройти проверку личности! Вы уже отправили данные, дождитесь ответа.</strong>
+                <strong>@Localizer["info"]</strong>
             </div>
         }
     }
@@ -41,22 +44,22 @@
     {
         <a href=@url>
             <button type="button" class="btn btn-success">
-                Создать проект
+                @Localizer["CreateProject"]
             </button>
         </a>
     }
     <br />
     <br />
     <dl class="dl-horizontal">
-        <dt>Password:</dt>
+        <dt>@Localizer["Password"]</dt>
         <dd>
             @if (Model.HasPassword)
             {
-                <a asp-controller="Manage" asp-action="ChangePassword" class="btn-bracketed">Change</a>
+                <a asp-controller="Manage" asp-action="ChangePassword" class="btn-bracketed">@Localizer["ChangePassword"]</a>
             }
             else
             {
-                <a asp-controller="Manage" asp-action="SetPassword" class="btn-bracketed">Create</a>
+                <a asp-controller="Manage" asp-action="SetPassword" class="btn-bracketed">@Localizer["CreatePassword"]</a>
             }
         </dd>
     </dl>

@@ -1,4 +1,6 @@
 ﻿@model SiteCore1.Models.Project
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 <br />
 <h2 align="center">@ViewData["Title"]</h2>
 
@@ -18,34 +20,34 @@
                         switch (@Html.Raw(ViewData["StatusProject"]).ToString())
                         {
                             case "WorkAndFull":
-                                <div class="alert alert-success">Уже собрали и ещё собираем!</div> 
+                                <div class="alert alert-success">@Localizer["St1"]</div> 
                                 break;
                             case "WorkAndNotFull":
-                                <div class="alert alert-warning">Ведется сбор средств.</div> 
+                                <div class="alert alert-warning">@Localizer["St2"]</div> 
                                 break;
                             case "NotWorkAndFull":
-                                <div class="alert alert-success">Проект состоялся!</div>
+                                <div class="alert alert-success">@Localizer["St3"]</div>
                                 break;
                             case "NotWorkAndNotFull":
-                                <div class="alert alert-danger">Проект не состоялся!</div>
+                                <div class="alert alert-danger">@Localizer["St4"]</div>
                                 break;
                         }
                     }
-                    <h3>Собрано средств: @Html.Raw(ViewData["Money"])</h3>
-                    <h5>Необходимо средстве: @Html.Raw(ViewData["Price"])</h5>
+                    <h3>@Localizer["St5"] @Html.Raw(ViewData["Money"])</h3>
+                    <h5>@Localizer["St6"] @Html.Raw(ViewData["Price"])</h5>
                     <br />
-                    <h4>Дата окончания: @Html.Raw(ViewData["DataEnd"])</h4>
+                    <h4>@Localizer["St7"] @Html.Raw(ViewData["DataEnd"])</h4>
                     @{
                         switch (@Html.Raw(ViewData["StatusProject"]).ToString())
                         {
                             case "WorkAndFull":
                                 <a asp-area="" asp-controller="Project" asp-action="GetMoney">
-                                    <input type="button" value="Профинансировать проект" class="btn btn-info" />
+                                    <input type="button" value="@Localizer["St8"]" class="btn btn-info" />
                                 </a>
                                 break;
                             case "WorkAndNotFull":
                                 <a asp-area="" asp-controller="Project" asp-action="GetMoney">
-                                    <input type="button" value="Профинансировать проект" class="btn btn-info" />
+                                    <input type="button" value="@Localizer["St8"]" class="btn btn-info" />
                                 </a>
                                 break;
                         }
@@ -55,25 +57,25 @@
                         if ((User.Identity.Name == @Html.Raw(ViewData["Name_owner"]).ToString()) || User.IsInRole("Admin"))
                         {
                             <a asp-area="" asp-route-id="@ViewData["ProjectId"].ToString()" asp-controller="Project" asp-action="EditHead">
-                                <input type="button" value="Edit Head" class="btn btn-primary" />
+                                <input type="button" value="@Localizer["St9"]" class="btn btn-primary" />
                             </a>
                             <br />
                             <a asp-area="" asp-route-id="@ViewData["ProjectId"].ToString()" asp-controller="Project" asp-action="EditText">
-                                <input type="button" value="Edit Content" class="btn btn-primary" />
+                                <input type="button" value="@Localizer["St10"]" class="btn btn-primary" />
                             </a>
                             <br />
                             <a asp-area="" asp-route-id="@ViewData["ProjectId"].ToString()" asp-controller="Project" asp-action="EditLots">
-                                <input type="button" value="Edit Lots" class="btn btn-primary" />
+                                <input type="button" value="@Localizer["St11"]" class="btn btn-primary" />
                             </a>
                             <br />
                             <a asp-area="" asp-route-id="@ViewData["ProjectId"].ToString()" asp-controller="Project" asp-action="ShowSponsor">
-                                <input type="button" value="Show sponsor" class="btn btn-primary" />
+                                <input type="button" value="@Localizer["St12"]" class="btn btn-primary" />
                             </a>
                             <br />
                             if (User.IsInRole("Admin"))
                             {
                                 <a asp-area="" asp-route-id="@ViewData["ProjectId"].ToString()" asp-controller="Project" asp-action="DisableProject">
-                                    <input type="button" value="Disable project" class="btn btn-danger" />
+                                    <input type="button" value="@Localizer["St13"]" class="btn btn-danger" />
                                 </a>
                             }
                         }
@@ -84,7 +86,7 @@
     </div>
     <br />
 
-    <p align="center">
+    <p align="center" style="width: 100%; word-wrap:break-word;">
         @Html.Raw(Content)
     </p>
 </div>
@@ -185,6 +187,9 @@
 
 
 <style>
+    img {
+        max-width: 100%;
+    }
 
     #ProgressBar {
         width: 10%;
